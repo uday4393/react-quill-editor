@@ -1,34 +1,51 @@
-import 'react-quill/dist/quill.snow.css';
-import {useState} from 'react'
-import './App.css';
+import "./App.css";
+import "react-quill/dist/quill.snow.css";
 import { useQuill } from "react-quilljs";
 
-const App = () => {
-  const [value, setValue] =  useState("");
-  const { quill, quillRef } = useQuill();
 
-  const handleSave = () => {
-    const text = quill.getText();
-    setValue(text);
-    const cursorPosition = quill.getSelection().index;
-    if(cursorPosition){
-      quill.clipboard.dangerouslyPasteHTML(cursorPosition,
-        "<p><br/><br/></p>")
-      quill.insertText(cursorPosition, "&");
-      quill.setSelection(cursorPosition + 1);
+import ReactQuill, { Quill } from "react-quill";
+import { modules, formats } from "./config";
+
+const Block = Quill.import("blots/block");
+
+Block.tagName = "DIV";
+Quill.register(Block, true);
+
+export default function App() {
+
+  const keyboardBindings = {
+    linebreak: {
+      key: 38,
+      handler: function (range, _context) {
+        this.quill.clipboard.dangerouslyPasteHTML(
+          range.index,
+          "<p><br/>&<br/></p>"
+        );
+      }
     }
+  };
+
+  const mods = {
+    ...modules,
+    keyboard: {
+      bindings: keyboardBindings
     }
-    return (
-      <div className="App">
-        <div style={{ width: 800, height: 500 }}>
-          <div style={{ width: 500, height: 300 }}>
-            <div>Saved State : {value}</div>
-            <div ref={quillRef} />
-          </div>  
-        </div>
-          <button onClick={handleSave}>Insert '&'</button>
-        </div>
-    )
+  };
+
+  const InsertAmpersand = () => {
+    const div = document.createElement('div');
+    div.className = 'row';
+    div.innerHTML = `<br />&`
+    document.getElementsByClassName('ql-editor')[0].firstChild.appendChild(div);
+    console.log(document.getElementsByClassName('ql-editor')[0].firstChild)
+  }
+  
+
+  return (
+    <div className="App">
+      <h1>Hello CodeSandbox</h1>
+      <ReactQuill theme="snow" modules={mods} formats={formats} />
+      <div><button onClick={InsertAmpersand}>INSERT &</button></div>
+    </div>
+  );
 }
-
-export default App;
